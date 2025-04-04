@@ -7,17 +7,19 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+
+	"cachedapi/pkg/config"
 )
 
 type Client struct {
 	redisClient *redis.Client
 }
 
-func NewClient(addr, password string, db int) (*Client, error) {
+func NewClient(cfg *config.Config) (*Client, error) {
 	client := redis.NewClient(&redis.Options{
-		Addr:     addr,
-		Password: password,
-		DB:       db,
+		Addr:     cfg.Host,
+		Password: cfg.Password,
+		DB:       cfg.Db,
 		Protocol: 2,
 	})
 

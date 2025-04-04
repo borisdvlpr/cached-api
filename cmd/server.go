@@ -8,11 +8,18 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	"cachedapi/internal/handler"
+	"cachedapi/pkg/cache"
+	"cachedapi/pkg/config"
 )
 
-func Run() {
+func Run(cfg *config.Config) {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+
+	_, err := cache.NewClient(cfg)
+	if err != nil {
+		log.Printf("Redis error: %v", err)
+	}
 
 	apiHandler := handler.NewApiHandler()
 

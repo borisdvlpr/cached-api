@@ -16,10 +16,11 @@ func Run(cfg *config.Config) {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	_, err := cache.NewClient(cfg)
+	cacheClient, err := cache.NewClient(cfg)
 	if err != nil {
 		log.Printf("Redis error: %v", err)
 	}
+	defer cacheClient.Close()
 
 	apiHandler := handler.NewApiHandler()
 

@@ -1,9 +1,12 @@
 package handler
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type ApiHandler struct {
@@ -13,8 +16,9 @@ func NewApiHandler() *ApiHandler {
 	return &ApiHandler{}
 }
 
-func (h *ApiHandler) Get(w http.ResponseWriter, r *http.Request) {
-	resp, err := http.Get("https://jsonplaceholder.typicode.com/todos/1")
+func (h *ApiHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	resp, err := http.Get(fmt.Sprintf("https://jsonplaceholder.typicode.com/todos/%s", id))
 	if err != nil {
 		log.Printf("Error fetching API: %v", err)
 		w.WriteHeader(http.StatusNotFound)

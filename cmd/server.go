@@ -29,7 +29,7 @@ func Run(cfg *config.Config) {
 		w.Write([]byte("OK."))
 	})
 
-	r.Get("/api", apiHandler.Get)
+	r.Get("/todo/{id}", apiHandler.GetTodo)
 
 	http.ListenAndServe(":3000", r)
 	if err := http.ListenAndServe(":3000", r); err != nil {

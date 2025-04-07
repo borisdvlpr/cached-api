@@ -12,7 +12,8 @@ import (
 )
 
 type Client struct {
-	redisClient *redis.Client
+	client *redis.Client
+	ttl    int
 }
 
 func NewClient(cfg *config.Config) (*Client, error) {
@@ -31,9 +32,9 @@ func NewClient(cfg *config.Config) (*Client, error) {
 	}
 
 	log.Printf("Connected to Redis.")
-	return &Client{redisClient: client}, nil
+	return &Client{client: client, ttl: cfg.TTL}, nil
 }
 
 func (c *Client) Close() error {
-	return c.redisClient.Close()
+	return c.client.Close()
 }

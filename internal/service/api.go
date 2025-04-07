@@ -7,7 +7,7 @@ import (
 	"cachedapi/pkg/cache"
 )
 
-var ErrCacheMiss = fmt.Errorf("")
+var ErrCacheMiss = fmt.Errorf("cache miss: requested key not found")
 
 type ApiService struct {
 	cache *cache.Client

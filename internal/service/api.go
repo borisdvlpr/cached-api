@@ -20,6 +20,10 @@ func NewApiService(cache *cache.Client) *ApiService {
 }
 
 func (s *ApiService) GetCache(ctx context.Context, key string) ([]byte, error) {
+	if s.cache == nil {
+		return nil, ErrCacheMiss
+	}
+
 	exists, err := s.cache.Exists(ctx, key)
 	if err != nil || !exists {
 		return nil, ErrCacheMiss
@@ -34,5 +38,9 @@ func (s *ApiService) GetCache(ctx context.Context, key string) ([]byte, error) {
 }
 
 func (s *ApiService) SetCache(ctx context.Context, key string, data []byte) error {
+	if s.cache == nil {
+		return ErrCacheMiss
+	}
+
 	return s.cache.Set(ctx, key, data)
 }

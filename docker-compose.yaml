@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  cached-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cachedapi
+    ports:
+      - "3000:3000"
+    environment:
+      - CACHE_URL=redis:6379
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: cachedapi-redis
+    ports:
+      - "6379:6379"
+    # No volumes specified
+    restart: unless-stopped

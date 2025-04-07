@@ -33,7 +33,6 @@ func Run(cfg *config.Config) {
 
 	r.Get("/todo/{id}", apiHandler.GetTodo)
 
-	http.ListenAndServe(":3000", r)
 	if err := http.ListenAndServe(":3000", r); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}

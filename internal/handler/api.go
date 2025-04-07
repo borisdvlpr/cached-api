@@ -28,7 +28,7 @@ func (h *ApiHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
 
 	cachedData, err := h.svc.GetCache(ctx, cacheKey)
 	if err == nil {
-		log.Printf("Cache hit for todo ID: %s", id)
+		log.Printf("Todo ID %s: cache hit", id)
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("X-Cache", "HIT")
 		w.WriteHeader(http.StatusOK)

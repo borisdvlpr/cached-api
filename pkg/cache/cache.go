@@ -35,6 +35,19 @@ func NewClient(cfg *config.Config) (*Client, error) {
 	return &Client{client: client, ttl: cfg.TTL}, nil
 }
 
+func (c *Client) Get(ctx context.Context, key string) ([]byte, error) {
+	return c.client.Get(ctx, key).Bytes()
+}
+
+func (c *Client) Set(ctx context.Context, key string, value []byte) error {
+	return c.client.Set(ctx, key, value, time.Duration(c.ttl)*time.Second).Err()
+}
+
+func (c *Client) Exists(ctx context.Context, key string) (bool, error) {
+	result, err := c.client.Exists(ctx, key).Result()
+	return result > 0, err
+}
+
 func (c *Client) Close() error {
 	return c.client.Close()
 }

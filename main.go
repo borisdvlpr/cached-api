@@ -10,7 +10,7 @@ import (
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		log.Printf("Unable to load env file: %v. Loading default values.", err)
+		log.Printf("Unable to load env file: %v. Loading available values.", err)
 	}
 
 	cfg, err := config.LoadConfig()

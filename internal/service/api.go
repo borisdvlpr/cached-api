@@ -7,7 +7,8 @@ import (
 	"cachedapi/pkg/cache"
 )
 
-var ErrCacheMiss = fmt.Errorf("cache miss: requested key not found")
+var ErrCacheConn = fmt.Errorf("unable to connect to server")
+var ErrCacheMiss = fmt.Errorf("requested key not found")
 
 type ApiService struct {
 	cache *cache.Client
@@ -21,7 +22,7 @@ func NewApiService(cache *cache.Client) *ApiService {
 
 func (s *ApiService) GetCache(ctx context.Context, key string) ([]byte, error) {
 	if s.cache == nil {
-		return nil, ErrCacheMiss
+		return nil, ErrCacheConn
 	}
 
 	exists, err := s.cache.Exists(ctx, key)
@@ -39,7 +40,7 @@ func (s *ApiService) GetCache(ctx context.Context, key string) ([]byte, error) {
 
 func (s *ApiService) SetCache(ctx context.Context, key string, data []byte) error {
 	if s.cache == nil {
-		return ErrCacheMiss
+		return ErrCacheConn
 	}
 
 	return s.cache.Set(ctx, key, data)

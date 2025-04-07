@@ -28,7 +28,7 @@ func (h *ApiHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
 
 	cachedData, err := h.svc.GetCache(ctx, cacheKey)
 	if err == nil {
-		log.Printf("Todo ID %s: cache hit", id)
+		log.Printf("%s: cache hit", cacheKey)
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("X-Cache", "HIT")
 		w.WriteHeader(http.StatusOK)
@@ -36,7 +36,7 @@ func (h *ApiHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Todo ID %s: %v", id, err)
+	log.Printf("%s: %v", cacheKey, err)
 
 	url := fmt.Sprintf("https://jsonplaceholder.typicode.com/todos/%s", id)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
@@ -65,6 +65,8 @@ func (h *ApiHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.svc.SetCache(ctx, cacheKey, body); err != nil {
 		log.Printf("Error caching response: %v", err)
+	} else {
+		log.Printf("%s: added to cache", cacheKey)
 	}
 
 	w.Header().Set("Content-Type", "application/json")

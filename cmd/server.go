@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	"cachedapi/internal/handler"
+	"cachedapi/internal/service"
 	"cachedapi/pkg/cache"
 	"cachedapi/pkg/config"
 )
@@ -22,7 +23,8 @@ func Run(cfg *config.Config) {
 	}
 	defer cacheClient.Close()
 
-	apiHandler := handler.NewApiHandler()
+	apiService := service.NewApiService(cacheClient)
+	apiHandler := handler.NewApiHandler(apiService)
 
 	r.Get("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

@@ -25,11 +25,6 @@ func (s *ApiService) GetCache(ctx context.Context, key string) ([]byte, error) {
 		return nil, ErrCacheConn
 	}
 
-	exists, err := s.cache.Exists(ctx, key)
-	if err != nil || !exists {
-		return nil, ErrCacheMiss
-	}
-
 	data, err := s.cache.Get(ctx, key)
 	if err != nil {
 		return nil, ErrCacheMiss

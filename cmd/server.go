@@ -19,7 +19,7 @@ func Run(cfg *config.Config) {
 
 	cacheClient, err := cache.NewClient(cfg)
 	if err != nil {
-		log.Printf("Redis error: %v", err)
+		log.Printf("Valkey error: %v", err)
 	}
 	defer cacheClient.Close()
 

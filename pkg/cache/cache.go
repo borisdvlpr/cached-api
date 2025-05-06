@@ -6,48 +6,53 @@ import (
 	"log"
 	"time"
 
-	"github.com/redis/go-redis/v9"
+	"github.com/valkey-io/valkey-go"
 
 	"cachedapi/pkg/config"
 )
 
 type Client struct {
-	client *redis.Client
+	client valkey.Client
 	ttl    int
 }
 
 func NewClient(cfg *config.Config) (*Client, error) {
-	client := redis.NewClient(&redis.Options{
-		Addr:     cfg.Host,
-		Password: cfg.Password,
-		DB:       cfg.Db,
-		Protocol: 2,
+	client, err := valkey.NewClient(valkey.ClientOption{
+		InitAddress: []string{cfg.Host},
+		Password:    cfg.Password,
 	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Valkey client: %v", err)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	if err := client.Ping(ctx).Err(); err != nil {
-		return nil, fmt.Errorf("failed to connect to Redis: %v", err)
+	timeout := client.B().Ping().Build()
+	if err := client.Do(ctx, timeout).Error(); err != nil {
+		return nil, fmt.Errorf("failed to connect to Valkey: %v", err)
 	}
 
-	log.Printf("Connected to Redis.")
+	log.Printf("Connected to Valkey.")
 	return &Client{client: client, ttl: cfg.TTL}, nil
 }
 
 func (c *Client) Get(ctx context.Context, key string) ([]byte, error) {
-	return c.client.Get(ctx, key).Bytes()
+	cmd := c.client.B().Get().Key(key).Build()
+	return c.client.Do(ctx, cmd).AsBytes()
 }
 
 func (c *Client) Set(ctx context.Context, key string, value []byte) error {
-	return c.client.Set(ctx, key, value, time.Duration(c.ttl)*time.Second).Err()
+	cmd := c.client.B().Set().Key(key).Value(string(value)).Px(time.Duration(c.ttl) * time.Second).Build()
+	return c.client.Do(ctx, cmd).Error()
 }
 
 func (c *Client) Exists(ctx context.Context, key string) (bool, error) {
-	result, err := c.client.Exists(ctx, key).Result()
-	return result > 0, err
+	cmd := c.client.B().Exists().Key(key).Build()
+	return c.client.Do(ctx, cmd).AsBool()
 }
 
-func (c *Client) Close() error {
-	return c.client.Close()
+func (c *Client) Close() {
+	c.client.Close()
 }

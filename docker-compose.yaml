@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3'
 
 services:
   cached-api:
@@ -9,14 +9,14 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - CACHE_URL=redis:6379
+      - CACHE_URL=valkey:6379
     depends_on:
-      - redis
+      - valkey
     restart: unless-stopped
 
-  redis:
-    image: redis:7-alpine
-    container_name: cachedapi-redis
+  valkey:
+    image: valkey/valkey:8.1.1-alpine
+    container_name: cachedapi-valkey
     ports:
       - "6379:6379"
     # No volumes specified

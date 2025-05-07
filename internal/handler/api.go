@@ -26,31 +26,21 @@ func (h *ApiHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	cacheKey := fmt.Sprintf("todo:%s", id)
 
-	cachedData, err := h.svc.GetCache(ctx, cacheKey)
-	if err == nil {
+	// check cache
+	if cachedData, err := h.svc.GetCache(ctx, cacheKey); err == nil {
+		h.writeJSONResponse(w, http.StatusOK, "HIT", cachedData)
 		log.Printf("%s: cache hit", cacheKey)
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("X-Cache", "HIT")
-		w.WriteHeader(http.StatusOK)
-		w.Write(cachedData)
 		return
+	} else {
+		log.Printf("%s: cache miss or error: %v", cacheKey, err)
 	}
 
-	log.Printf("%s: %v", cacheKey, err)
-
+	// fetch from external API
 	url := fmt.Sprintf("https://jsonplaceholder.typicode.com/todos/%s", id)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		log.Printf("Error creating request: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := http.Get(url)
 	if err != nil {
 		log.Printf("Error fetching API: %v", err)
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("Not found."))
+		http.Error(w, "Error fetching API", http.StatusNotFound)
 		return
 	}
 	defer resp.Body.Close()
@@ -58,19 +48,25 @@ func (h *ApiHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("Error reading response body: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Error reading response body."))
+		http.Error(w, "Error reading response body", http.StatusInternalServerError)
 		return
 	}
 
+	// cache the response
 	if err := h.svc.SetCache(ctx, cacheKey, body); err != nil {
 		log.Printf("Error caching response: %v", err)
 	} else {
 		log.Printf("%s: added to cache", cacheKey)
 	}
 
+	// write response
+	h.writeJSONResponse(w, http.StatusOK, "MISS", body)
+}
+
+// Helper function to write JSON responses
+func (h *ApiHandler) writeJSONResponse(w http.ResponseWriter, status int, cacheStatus string, body []byte) {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Cache", "MISS")
-	w.WriteHeader(http.StatusOK)
+	w.Header().Set("X-Cache", cacheStatus)
+	w.WriteHeader(status)
 	w.Write(body)
 }

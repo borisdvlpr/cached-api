@@ -20,6 +20,7 @@ func NewClient(cfg *config.Config) (*Client, error) {
 	client, err := valkey.NewClient(valkey.ClientOption{
 		InitAddress: []string{cfg.Host},
 		Password:    cfg.Password,
+		SelectDB:    cfg.Db,
 	})
 
 	if err != nil {

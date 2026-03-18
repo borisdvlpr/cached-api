@@ -3,6 +3,7 @@ package cmd
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -33,7 +34,12 @@ func Run(cfg *config.Config) {
 
 	r.Get("/todo/{id}", apiHandler.GetTodo)
 
-	if err := http.ListenAndServe(":3000", r); err != nil {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+
+	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}
 }
